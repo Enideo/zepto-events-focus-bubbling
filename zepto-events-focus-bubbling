@@ -1,0 +1,46 @@
+
+/// Largely based on jQuery code
+
+
+
+$.event.simulate = function( type, elem, event, bubble ) {
+
+  var e = $.extend(
+    new $.Event(type),
+    event,
+    {
+      type: type,
+      isSimulated: true,
+      originalEvent: {},
+      bubbles:true,
+    }
+  );
+
+  $(elem).trigger(e);
+
+  if ( e.isDefaultPrevented() ) {
+    event.preventDefault();
+  }
+}
+
+
+$.each({ focus: "focusin", blur: "focusout" }, function( orig, fix ) {
+
+  var attaches = 0,
+    handler = function( event ) {
+      $.event.simulate( fix, event.target, $.extend({},event), true );
+    };
+
+  $.event.special[ fix ] = {
+    setup: function() {
+      if ( attaches++ === 0 ) {
+        document.addEventListener( orig, handler, true );
+      }
+    },
+    teardown: function() {
+      if ( --attaches === 0 ) {
+        document.removeEventListener( orig, handler, true );
+      }
+    }
+  };
+});
